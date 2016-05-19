@@ -10,9 +10,13 @@ local function perform_dispatch(self, ...)
 
 	local func = self[string.lower(command)]
 	if func then
-		return true, func(select(2, ...))
+		local function wrapper()
+			return func(select(2, ...))
+		end
+
+		return xpcall(wrapper, debug.traceback)
 	end
-	
+
 	return false, "command not found"
 end
 
@@ -22,14 +26,15 @@ local M = {}
 --
 -- This object is callable, like a function. The first argument will be treated
 -- as the command name. The dispatch method will return a boolean value
--- indicating success and any values returned by the invoked command.
+-- indicating success and any values returned by the invoked command. On error,
+-- the boolean value will be false and an error message will be returned.
 --
 -- 't' should be a table that maps commands, represented as lower-case strings,
 -- to commands. These commands should be callable.
 --
 -- Returns the command object.
 function M.create(t)
-	return setmetatable(t, { __call = perform_dispatch })
+	return setmetatable(t or {}, { __call = perform_dispatch })
 end
 
 -- Parses 'line' into separate arguments.
