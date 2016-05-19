@@ -3,7 +3,7 @@
 --
 -- This file is licensed under the BSD 2-Clause license.
 --
--- Copyright (c) 2016, Aaron Bolyard.
+-- Copyright (c) 2016 Aaron Bolyard.
 local bit = require 'bit'
 local ffi = require 'ffi'
 local jit = require 'jit'

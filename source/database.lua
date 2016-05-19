@@ -1,3 +1,9 @@
+-- Interface for password database. Provides methods for saving/loading,
+-- valdiating, querying, adding/editing entries, and other such database things.
+--
+-- This file is licensed under the BSD 2-Clause license.
+--
+-- Copyright (c) 2016 Aaron Bolyard.
 local crypto = require 'crypto'
 local serpent = require 'serpent'
 
