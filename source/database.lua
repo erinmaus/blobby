@@ -42,6 +42,86 @@ function O:save(path)
 	end
 end
 
+local function is_match(string, pattern)
+	-- This does two things:
+	-- 1) Default to a wildcard match.
+	-- 2) Force the pattern to reject partial matches.
+	pattern = string.format("^%s$", pattern or ".*")
+
+	local s, r = pcall(string.match, string, pattern)
+	
+	return s and r ~= nil
+end
+
+-- Query to return the first entry matching certain parameters.
+--
+-- The parameters--'username', 'domain', and 'category'--are patterns to be
+-- compared against each entry. If not provided, the default patterns match
+-- any value.
+--
+-- Returns the first entry on success. On failure, returns nil.
+function O:query_single(username, domain, category)
+	for i = 1, #self.entries do
+		local e = self.entries[i]
+
+		if is_match(e.username, username)
+			and is_match(e.domain, domain)
+			and is_match(e.category, category)
+		then
+			return e
+		end
+	end
+
+	return nil
+end
+
+-- Query to list entries matching certain parameters.
+--
+-- Searches the specified 'field' in the entries and compares it
+-- against 'pattern'. If 'field' is 'all', then each field will be
+-- compared against 'pattern'. Comparisons against 'pattern' are
+-- treated as a complete match, and 'pattern' follows the Lua pattern spec.
+--
+-- Returns a boolean value indicating success. On failure, also returns a
+-- string indicating the failure condition. On success, also returns an iterator
+-- function that returns the next entry successively and nil when iteration is
+-- over.
+function O:query_list(field, pattern)
+	field = field or 'all'
+
+	if field ~= 'all'
+		and field ~= 'username'
+		and field ~= 'domain'
+		and field ~= 'category'
+	then
+		return false, "invalid search field"
+	end
+
+	local current_index = 1
+	return true, function()
+		for i = current_index, #self.entries do
+			local e = self.entries[i]
+
+			local match
+			if field == 'all' then
+				match = is_match(e.username, pattern)
+					or is_match(e.domain, pattern)
+					or is_match(e.category, pattern)
+			else
+				match = is_match(e[field], pattern)
+			end
+
+			if match then
+				current_index = i + 1
+
+				return e
+			end
+		end
+
+		return nil
+	end
+end
+
 -- Destroys the database.
 --
 -- The database can no longer be saved after this operation.
