@@ -220,6 +220,72 @@ function Session.view(username, domain, category)
 	end
 end
 
+local Edit = command.create()
+function Edit.password(...)
+	local e = get_active_entry(...)
+	if e then
+		write_line("Editing password for '%s' from '%s'.", e.username, e.domain)
+
+		local password = read_new_password()
+		if password == "" then
+			write_line("No action taken. Password is empty.")
+		else
+			e.password = password
+			write_line("Password successfully changed.")
+		end
+	end
+end
+
+function Edit.data(id, ...)
+	require_argument("id", id)
+
+	local e = get_active_entry(...)
+	if e then
+		write_line("Editing data for '%s' from '%s'.", e.username, e.domain)
+
+		if e.data[id] then
+			local m = string.format("Do you want to delete '%s'?", id)
+
+			if ask_confirmation(m) then
+				e.data[id] = nil
+
+				return
+			end
+		end
+
+		local value = masked_read_line("Enter value for '%s': ", id)
+
+		if value == "" then
+			write_line("No action taken. Value is empty.")
+		else
+			e.data[id] = value
+			write_line("Data successfully changed.")
+		end
+	end
+end
+
+function Edit.note(...)
+	local e = get_active_entry(...)
+	if e then
+		write_line("Editing note for '%s' from '%s'.", e.username, e.domain)
+
+		if e.note ~= "" then
+			write_line("Currently, the note is: '%s'.", e.note)
+		end
+
+		e.note = read_line("Enter new note: ")
+
+		write_line("Note successfully changed.")
+	end
+end
+
+function Session.edit(field, ...)
+	require_argument("field", field)
+	validate_enum(field, { 'password', 'note', 'data' })
+
+	Edit(field, ...)
+end
+
 function Session.exit()
 	if ask_confirmation("Save any changes?") then
 		State.database:save(State.database.path)
