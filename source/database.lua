@@ -319,8 +319,8 @@ function M.load(path, passphrase)
 		passphrase,
 		section.salt,
 		section.key_size,
-		section.ops_limit,
-		section.mem_limit)
+		section.key_ops,
+		section.key_mem)
 
 	local success, entries = deserialize_private_section(section.private, key)
 	if not success or not validate_entries(entries) then
@@ -329,6 +329,14 @@ function M.load(path, passphrase)
 		return false, nil
 	end
 
+	database.key = key
+	database.key_info.salt = section.salt
+	database.key_info.options =
+	{
+		size = section.key_size,
+		ops_limit = section.key_ops,
+		mem_limit = section.key_mem
+	}
 	database.entries = entries
 
 	return true, database
