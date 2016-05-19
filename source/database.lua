@@ -49,7 +49,7 @@ local function is_match(string, pattern)
 	pattern = string.format("^%s$", pattern or ".*")
 
 	local s, r = pcall(string.match, string, pattern)
-	
+
 	return s and r ~= nil
 end
 
@@ -120,6 +120,65 @@ function O:query_list(field, pattern)
 
 		return nil
 	end
+end
+
+local function is_unique(entries, username, domain, category)
+	for i = 1, #entries do
+		local e = entries[i]
+
+		if e.username == username
+			and e.domain == domain
+			and e.category == category
+		then
+			return false
+		end
+	end
+
+	return true
+end
+
+-- Adds an entry to the database.
+--
+-- 'username', 'domain', and 'category' must be unique to those already in
+-- the database.
+--
+-- Returns true on success, false on failure. On success, also returns the
+-- new entry. Failure occurs when the entry already exists in the database.
+function O:add_entry(username, domain, category)
+	category = category or ""
+
+	if is_unique(self.entries, username, domain, category) then
+		local entry = {}
+
+		entry.username = username
+		entry.domain = domain
+		entry.category = category
+		entry.password = ""
+		entry.note = ""
+		entry.data = {}
+
+		table.insert(self.entries, entry)
+
+		return true, entry
+	end
+
+	return false
+end
+
+-- Removes an entry from the database.
+--
+-- Returns true if 'entry' was removed, false otherwise. Failure occurs if
+-- 'entry' is not in the database.
+function O:remove_entry(entry)
+	for i = 1, #self.entries do
+		if self.entries[i] == entry then
+			table.remove(self.entries, i)
+
+			return true
+		end
+	end
+
+	return false
 end
 
 -- Destroys the database.
