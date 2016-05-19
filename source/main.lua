@@ -42,6 +42,12 @@ local function read_line(...)
 	return io.read("*l")
 end
 
+local function masked_read_line(...)
+	local prompt = string.format(...)
+
+	return crypto.read_passphrase(prompt, true)
+end
+
 local function require_argument(name, v)
 	if not v then
 		error(string.format("argument '%s' required", name))
@@ -64,6 +70,19 @@ local function validate_enum(v, e)
 			v,
 			table.concat(e, ", "))
 		error(m)
+	end
+end
+
+local function read_new_password()
+	while true do
+		local a = masked_read_line("Enter password: ", true)
+		local b = masked_read_line("Verify password: ", true)
+
+		if a ~= b then
+			write_line("Passwords don't match! Try again.")
+		else
+			return a
+		end
 	end
 end
 
@@ -159,31 +178,45 @@ function Session.remove()
 	end
 end
 
-function Session.view(username, domain, category)
-	if username ~= nil then
-		local e = State.database:query_single(username, domain, category)
+local function get_active_entry(username, domain, category)
+	if username == nil
+		and domain == nil
+		and category == nil
+	then
+		if State.active == nil then
+			write_line("No active entry.")
 
-		if not e then
-			write_line("No entries found matching arguments.")
-
-			return
-		else
-			State.active = e
+			return nil
 		end
+
+		return State.active
 	end
 
-	if State.active == nil then
-		write_line("No active entry.")
-	else
-		write_field(State.active, "username")
-		write_field(State.active, "domain")
-		write_field(State.active, "category")
-		write_field(State.active, "password", true)
-		write_field(State.active, "note")
+	local e = State.database:query_single(username, domain, category)
+	if e == nil then
+		write_line("No entries found matching parameters.")
 
-		for key in pairs(State.active.data) do
+		return nil
+	end
+
+	return e
+end
+
+function Session.view(username, domain, category)
+	local e = get_active_entry(username, domain, category)
+
+	if e then
+		write_field(e, "username")
+		write_field(e, "domain")
+		write_field(e, "category")
+		write_field(e, "password", true)
+		write_field(e, "note")
+
+		for key in pairs(e.data) do
 			write_line("%q = ********", key)
 		end
+
+		State.active = e
 	end
 end
 
