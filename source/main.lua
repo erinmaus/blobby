@@ -386,6 +386,7 @@ end
 
 local Main = command.create()
 function Main.create(path)
+	require_argument("path", path)
 	write_line("Creating new password database.")
 
 	local passphrase
@@ -413,6 +414,8 @@ function Main.create(path)
 end
 
 function Main.open(path)
+	require_argument("path", path)
+
 	local passphrase = crypto.read_passphrase("Enter passphrase: ")
 	local success, d = database.load(path, passphrase)
 
@@ -457,10 +460,17 @@ local function session_loop(d, path)
 end
 
 local function start(...)
+	if select("#", ...) == 0 then
+		Main("help")
+
+		return
+	end
+
 	local success, a, b = Main(...)
 
 	if not success then
-		io.stderr:write(a)
+		write_line("Error: %s", a)
+		write_line("Run 'blobby help' for a list of valid commands.")
 
 		os.exit(1)
 	end
