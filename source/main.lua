@@ -115,7 +115,7 @@ end
 local State = {}
 local Session = command.create()
 function Session.list(field, pattern)
-	field = field or 'all'
+	field = string.lower(field or 'all')
 
 	validate_enum(field, { 'all', 'domain', 'username', 'category' })
 
@@ -281,9 +281,63 @@ end
 
 function Session.edit(field, ...)
 	require_argument("field", field)
-	validate_enum(field, { 'password', 'note', 'data' })
+	validate_enum(string.lower(field), { 'password', 'note', 'data' })
 
 	Edit(field, ...)
+end
+
+local Fetch = command.create()
+function Fetch.password(...)
+	local e = get_active_entry(...)
+	if e then
+		return e, e.password
+	end
+
+	return nil, nil
+end
+
+function Fetch.data(id, ...)
+	require_argument("id", id)
+
+	local e = get_active_entry(...)
+	if e then
+		if e.data[id] == nil then
+			write_line("Data '%s' has no value.", id)
+
+			return nil, nil
+		end
+
+		return e, e.data[id]
+	end
+
+	return nil, nil
+end
+
+function Fetch.note(...)
+	local e = get_active_entry(...)
+	if e then
+		return e, e.note
+	end
+
+	return nil, nil
+end
+
+function Session.show(field, ...)
+	require_argument("field", field)
+	validate_enum(string.lower(field), { 'password', 'note', 'data' })
+
+	local success, e, f = Fetch(field, ...)
+	if success then
+		if e then
+			write_line(
+				"Showing requested field for '%s' from '%s'.",
+				e.username,
+				e.domain)
+			write_line("Result: %s", f)
+		else
+			write_line("Nothing to show.")
+		end
+	end
 end
 
 function Session.exit()
