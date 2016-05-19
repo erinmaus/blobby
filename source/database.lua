@@ -8,6 +8,12 @@ local crypto = require 'crypto'
 local serpent = require 'serpent'
 
 local O = {}
+
+-- Saves the database to a file at 'path'.
+--
+-- The database will be encrypted. A public section of the database contains
+-- the necessary data to regenerate the key with the correct passphrase and
+-- deserialize the private section.
 function O:save(path)
 	local d = {}
 
@@ -36,8 +42,12 @@ function O:save(path)
 	end
 end
 
+-- Destroys the database.
+--
+-- The database can no longer be saved after this operation.
 function O:destroy()
 	crypto.free_key(self.key)
+	self.key = nil
 end
 
 local function create_database()
@@ -51,6 +61,11 @@ local function create_database()
 end
 
 local M = {}
+
+-- Creates a new database protected by the provided passphrase.
+--
+-- This automatically generates a proper salt and sets the key derivation
+-- parameters.
 function M.create(passphrase)
 	local key, salt, options = crypto.derive_key(passphrase)
 
@@ -148,6 +163,12 @@ local function validate_entries(entries)
 	return true
 end
 
+-- Loads a database from the provided path.
+--
+-- 'passphrase' will be used to decrypt the database.
+--
+-- Returns a boolean indicating success. On success, also returns the
+-- decrypted database.
 function M.load(path, passphrase)
 	local database = create_database()
 
