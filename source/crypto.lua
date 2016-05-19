@@ -362,7 +362,9 @@ end
 
 -- Decrypts data with the provided nonce and key.
 --
--- Returns the decrypted data, as a string.
+-- Returns two values: a boolean value indicating success and the decrypted
+-- data, as a string. If the operation fails, the boolean value will be 'false'
+-- and the data will be nil.
 function M.decrypt(data, nonce, key)
 	local data_buffer, nonce_buffer, output_buffer
 	local function on_fail()
@@ -387,7 +389,7 @@ function M.decrypt(data, nonce, key)
 	then
 		on_fail()
 
-		error("couldn't decrypt data")
+		return false, nil
 	end
 
 	local output_data = ffi.string(output_buffer, output_buffer_size)
@@ -395,7 +397,7 @@ function M.decrypt(data, nonce, key)
 	free_buffer(nonce_buffer)
 	free_buffer(output_buffer)
 
-	return output_data
+	return true, output_data
 end
 
 if sodium.sodium_init() == -1 then
