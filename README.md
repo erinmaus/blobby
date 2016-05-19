@@ -4,7 +4,8 @@ Very simple password manager written in Lua. Uses the Sodium crypto library.
 This password manager was made only for my personal use. No guarantees are made
 of the security, reliability, or benefits of this utility.
 
-If you want to manage passwords, use a tried-and-tested utility.
+If you want to manage passwords, don't use Blobby. Instead, use a
+tried-and-tested utility.
 
 # Requirements
 Blobby requires LuaJIT 2 and the Sodium crypto library.
