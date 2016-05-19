@@ -20,6 +20,22 @@ local function write_line(...)
 	io.write(string.format(...), "\n")
 end
 
+local function write_field(obj, field, masked)
+	local f
+
+	if masked then
+		if obj[field] and obj[field] ~= "" then
+			f = "********"
+		else
+			f = ""
+		end
+	else
+		f = obj[field]
+	end
+
+	write_line("%20s: %s", field, f)
+end
+
 local function read_line(...)
 	write(...)
 
@@ -139,6 +155,34 @@ function Session.remove()
 			State.active = nil
 		else
 			write_line("No action taken.")
+		end
+	end
+end
+
+function Session.view(username, domain, category)
+	if username ~= nil then
+		local e = State.database:query_single(username, domain, category)
+
+		if not e then
+			write_line("No entries found matching arguments.")
+
+			return
+		else
+			State.active = e
+		end
+	end
+
+	if State.active == nil then
+		write_line("No active entry.")
+	else
+		write_field(State.active, "username")
+		write_field(State.active, "domain")
+		write_field(State.active, "category")
+		write_field(State.active, "password", true)
+		write_field(State.active, "note")
+
+		for key in pairs(State.active.data) do
+			write_line("%q = ********", key)
 		end
 	end
 end
