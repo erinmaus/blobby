@@ -196,11 +196,13 @@ M.default_password_max_size = 1024
 -- Presents 'prompt'. The passphrase can be up to 'max_size' characters; if not
 -- provided, this is 'default_password_max_size'.
 --
+-- If 'stringify' is true, the returned passphrase will be a Lua string.
+--
 -- The passphrase input will be masked.
 --
 -- Returns a password buffer. The buffer should be freeded with
 -- 'free_passphrase'.
-function M.read_passphrase(prompt, max_size)
+function M.read_passphrase(prompt, stringify, max_size)
 	local buffer
 
 	if jit.os == 'BSD' then
@@ -214,6 +216,14 @@ function M.read_passphrase(prompt, max_size)
 
 			error("could not read passphrase")
 		end
+	end
+
+	if stringify then
+		local p = ffi.string(buffer)
+
+		free_buffer(buffer)
+
+		return p
 	end
 
 	return buffer
