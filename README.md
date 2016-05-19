@@ -95,15 +95,13 @@ You can `add` an entry:
 ```
 
 If an entry already exists, nothing will happen. No password, note, or data will
-be associated with the entry.
+be associated with the entry. The newly created entry will be made active.
 
-## Passwords
-Passwords (or data) can be manually specified or automatically generated using
-`edit`.
+You can `remove` an entry. If you confirm the action, the active entry will be
+removed from the database. This cannot be undone.
 
-If generated, some questions will be asked about the password requirements.
-Afterwards, the password will be stored. It can be retrieved with `copy` or
-`show`.
+To end the session, use the `exit` command. You will be asked to save the
+database. Regardless, the session will end.
 
 # License
 Blobby is licensed under the BSD 2-Clause license. View LICENSE in the root
