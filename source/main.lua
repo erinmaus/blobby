@@ -7,6 +7,11 @@ local command = require 'command'
 local crypto = require 'crypto'
 local database = require 'database'
 
+local _error = error
+function error(message)
+	_error(message, 0)
+end
+
 local function write(...)
 	io.write(string.format(...))
 end
