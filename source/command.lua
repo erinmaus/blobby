@@ -10,12 +10,7 @@ local function perform_dispatch(self, ...)
 
 	local func = self[string.lower(command)]
 	if func then
-		local args = { n = select("#", ...), ... }
-		local function wrapper()
-			return func(unpack(args, 2, args.n))
-		end
-
-		return xpcall(wrapper, debug.traceback)
+		return pcall(func, select(2, ...))
 	end
 
 	return false, "command not found"
