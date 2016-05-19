@@ -76,7 +76,7 @@ function Confirm.no()
 	return false
 end
 
-function ask_confirmation(message)
+local function ask_confirmation(message)
 	write_line(message)
 
 	local success, result
