@@ -12,6 +12,23 @@ function error(message)
 	_error(message, 0)
 end
 
+local function copy_to_clipboard(value)
+	local jit = require 'jit'
+
+	if jit.os == 'BSD' then
+		local f, e = io.popen("xclip -selection clipboard", "w")
+
+		if not f then
+			error(e)
+		end
+
+		f:write(value)
+		f:close()
+	else
+		error("unsupported platform; cannot copy to clipboard")
+	end
+end
+
 local function write(...)
 	io.write(string.format(...))
 end
@@ -336,6 +353,25 @@ function Session.show(field, ...)
 			write_line("Result: %s", f)
 		else
 			write_line("Nothing to show.")
+		end
+	end
+end
+
+function Session.copy(field, ...)
+	require_argument("field", field)
+	validate_enum(string.lower(field), { 'password', 'note', 'data' })
+
+	local success, e, f = Fetch(field, ...)
+	if success then
+		if e then
+			copy_to_clipboard(f)
+
+			write_line(
+				"Copied requested field for '%s' from '%s'.",
+				e.username,
+				e.domain)
+		else
+			write_line("Nothing to copy.")
 		end
 	end
 end
