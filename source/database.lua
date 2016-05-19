@@ -40,6 +40,8 @@ function O:save(path)
 		f:write(s)
 		f:close()
 	end
+
+	self.path = path
 end
 
 local function is_match(string, pattern)
@@ -310,6 +312,7 @@ end
 -- decrypted database.
 function M.load(path, passphrase)
 	local database = create_database()
+	database.path = path
 
 	local section = deserialize_public_section(read_file(path), true)
 	local key = regenerate_key(
