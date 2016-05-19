@@ -10,8 +10,9 @@ local function perform_dispatch(self, ...)
 
 	local func = self[string.lower(command)]
 	if func then
+		local args = { n = select("#", ...), ... }
 		local function wrapper()
-			return func(select(2, ...))
+			return func(unpack(args, 2, args.n))
 		end
 
 		return xpcall(wrapper, debug.traceback)
