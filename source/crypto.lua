@@ -27,6 +27,12 @@ if jit.os == 'BSD' then
 			size_t bufsiz,
 			int flags);
 	]]
+elseif jit.os == 'Linux' then
+	ffi.cdef [[
+		char* getpass(const char *prompt);
+		size_t strlen(const char *str);
+		char* strcpy(char *dest, const char *src);
+	]]
 else
 	error("unsupported platform: no passphrase input method found")
 end
@@ -204,9 +210,8 @@ M.default_password_max_size = 1024
 -- 'free_passphrase'.
 function M.read_passphrase(prompt, stringify, max_size)
 	local buffer
-
+	prompt = prompt or "Enter passphrase:"
 	if jit.os == 'BSD' then
-		prompt = prompt or "Enter passphrase:"
 		max_size = max_size or M.default_password_max_size
 		buffer = simple_try(create_buffer, { max_size }, nil)
 
@@ -215,6 +220,14 @@ function M.read_passphrase(prompt, stringify, max_size)
 			free_buffer(buffer)
 
 			error("could not read passphrase")
+		end
+	elseif jit.os == 'Linux' then
+		local b = ffi.C.getpass(prompt)
+		local l = ffi.C.strlen(b)
+		buffer = simple_try(create_buffer, { tonumber(l + 1) }, nil)
+		
+		for i = 0, tonumber(l) do
+			buffer[i] = b[i]
 		end
 	end
 

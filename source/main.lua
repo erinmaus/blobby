@@ -15,7 +15,7 @@ end
 local function copy_to_clipboard(value)
 	local jit = require 'jit'
 
-	if jit.os == 'BSD' then
+	if jit.os == 'BSD' or jit.os == 'Linux' then
 		local f, e = io.popen("xclip -selection clipboard", "w")
 
 		if not f then
