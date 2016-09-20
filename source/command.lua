@@ -8,9 +8,11 @@
 local function perform_dispatch(self, ...)
 	local command = select(1, ...)
 
-	local func = self[string.lower(command)]
-	if func then
-		return pcall(func, select(2, ...))
+	if command and #command > 1 then
+		local func = self[string.lower(command)]
+		if func then
+			return pcall(func, select(2, ...))
+		end
 	end
 
 	return false, "command not found"
